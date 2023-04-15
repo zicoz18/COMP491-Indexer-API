@@ -18,7 +18,7 @@ const main = async () => {
     // If block number is given, return the specific block
     if (req.query.number) {
       const block = await collections.block.findOne({
-        number: parseInt(req.query.number as unknown as string),
+        number: parseInt(<string>req.query.number),
       })
       res.send(block)
       return
@@ -27,7 +27,7 @@ const main = async () => {
       const blocks = await collections.block
         .find({})
         .sort({ number: -1 })
-        .limit(parseInt(req.query.latestCount as unknown as string))
+        .limit(parseInt(<string>req.query.latestCount))
         .toArray()
       res.send(blocks)
       return
@@ -42,9 +42,7 @@ const main = async () => {
   app.get('/transactions', async (req, res) => {
     // If transaction hash is given, return the specific transaction
     if (req.query.hash) {
-      console.log(req.query.hash)
       const transaction = await collections.transaction.findOne({ hash: req.query.hash })
-      console.log(transaction)
       res.send(transaction)
       return
     } else if (req.query.latestCount) {
@@ -52,7 +50,7 @@ const main = async () => {
       const transactions = await collections.transaction
         .find({})
         .sort({ blockNumber: -1 })
-        .limit(parseInt(req.query.latestCount as unknown as string))
+        .limit(parseInt(<string>req.query.latestCount))
         .toArray()
       res.send(transactions)
       return
@@ -64,6 +62,29 @@ const main = async () => {
         .limit(10)
         .toArray()
       res.send(transactions)
+      return
+    }
+  })
+
+  app.get('/search', async (req, res) => {
+    // If transaction hash is given, return the specific transaction
+    if (req.query.address) {
+      const transactions = await collections.transaction
+        .find({
+          $or: [{ from: req.query.address }, { to: req.query.address }],
+        })
+        .toArray()
+      res.send(transactions)
+      return
+    } else if (req.query.transactionHash) {
+      const transaction = await collections.transaction.findOne({ hash: req.query.transactionHash })
+      res.send(transaction)
+      return
+    } else if (req.query.blockNumber) {
+      const block = await collections.block.findOne({
+        number: parseInt(<string>req.query.blockNumber),
+      })
+      res.send(block)
       return
     }
   })
