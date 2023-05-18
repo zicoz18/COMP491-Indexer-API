@@ -1,10 +1,14 @@
 import express from 'express'
 import bodyParser from 'body-parser'
+import * as ethers from 'ethers'
 
 import initMongoDB from './init/db'
 import { getCollections } from './utils/getCollections'
 
 const main = async () => {
+  const provider = new ethers.providers.JsonRpcProvider(
+    'http://194.233.165.161:9650/ext/bc/zate/rpc'
+  )
   const db = await initMongoDB()
   const collections = getCollections(db)
 
@@ -85,6 +89,17 @@ const main = async () => {
         number: parseInt(<string>req.query.blockNumber),
       })
       res.send(block)
+      return
+    }
+  })
+
+  app.get('/balance', async (req, res) => {
+    if (req.query.address) {
+      const balance = await provider.getBalance(req.query.address as string)
+      const balanceInEther = ethers.utils.formatEther(balance.toString())
+      res.send({ balance: balanceInEther })
+      return
+    } else {
       return
     }
   })
