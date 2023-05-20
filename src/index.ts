@@ -71,7 +71,7 @@ const main = async () => {
   })
 
   app.get('/search', async (req, res) => {
-    // If transaction hash is given, return the specific transaction
+    // If an address is provided return the transaction that have the address inside `from` or `to` parameter
     if (req.query.address) {
       const transactions = await collections.transaction
         .find({
@@ -81,10 +81,12 @@ const main = async () => {
       res.send(transactions)
       return
     } else if (req.query.transactionHash) {
+      // If transaction hash is given, return the specific transaction
       const transaction = await collections.transaction.findOne({ hash: req.query.transactionHash })
       res.send(transaction)
       return
     } else if (req.query.blockNumber) {
+      // If a blockNumber is provided retun the specific bloc
       const block = await collections.block.findOne({
         number: parseInt(<string>req.query.blockNumber),
       })
@@ -94,6 +96,7 @@ const main = async () => {
   })
 
   app.get('/balance', async (req, res) => {
+    // If an address is provided return the balance of that address
     if (req.query.address) {
       const balance = await provider.getBalance(req.query.address as string)
       const balanceInEther = ethers.utils.formatEther(balance.toString())
